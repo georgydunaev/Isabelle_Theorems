@@ -1,5 +1,5 @@
 theory Example2
-imports Main
+imports ZF
 begin
 
 lemma example_lemma:

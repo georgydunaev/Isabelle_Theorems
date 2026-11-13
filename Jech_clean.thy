@@ -1,37 +1,43 @@
-theory Jech imports ZF begin
+theory Jech_clean imports ZF begin
 context 
   fixes S
   fixes W defines W_def : "W == {x ∈ S. x ∉ x}"
 begin
 
-lemma ex_1_2' : "  ¬ (Pow(S) ⊆ S)"
-  apply (rule notI)
-  apply (rule case_split[where P="WW"])
-  apply (rule notE[where P="WW"])
-    apply (rule CollectD2[where A=S])
-    apply (fold W_def)
-    apply assumption
-   apply assumption
-  apply (rule notE[where P="WW"])
-   apply assumption
-  apply (unfold W_def)
-   apply (rule CollectI)
-   apply (fold W_def)
-   prefer 2
-  apply assumption
-  (*subgoal*)
-   apply (unfold subset_def)
-   apply (unfold Ball_def)
-    apply (rule mp[where P="WPow(S)"])
-     apply (rule spec[where x=W])
-     apply assumption
-    apply (rule PowI)
-    apply (unfold W_def)
-    apply (unfold subset_def)
-    apply (unfold Ball_def)
-    apply (rule allI)
-    apply (rule impI)
-    apply (rule CollectD1)
-    apply assumption
-  done
-end 
+lemma ex_1_2' : "¬ (Pow(S) ⊆ S)"
+proof (rule notI)
+  assume sub: "Pow(S) ⊆ S"
+  have W_sub: "W ⊆ S"
+  proof (rule subsetI)
+    fix x
+    assume "x ∈ W"
+    then have "x ∈ {x ∈ S. x ∉ x}"
+      unfolding W_def .
+    then show "x ∈ S"
+      by (rule CollectD1)
+  qed
+  have W_in_Pow: "W ∈ Pow(S)"
+    using W_sub by (rule PowI)
+  have W_in_S: "W ∈ S"
+    using sub W_in_Pow by (rule subsetD)
+  have not_in: "W ∉ W"
+  proof (rule notI)
+    assume in_W: "W ∈ W"
+    then have "W ∈ {x ∈ S. x ∉ x}"
+      unfolding W_def .
+    then have not_W: "W ∉ W"
+      by (rule CollectD2)
+    show False
+      using not_W in_W by (rule notE)
+  qed
+  have in_W: "W ∈ W"
+  proof (unfold W_def, rule CollectI)
+    show "W ∈ S" by (rule W_in_S)
+  next
+    show "W ∉ W" by (rule not_in)
+  qed
+  show False
+    using not_in in_W by (rule notE)
+qed
+
+end
